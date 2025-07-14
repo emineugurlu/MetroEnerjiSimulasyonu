@@ -1,0 +1,9 @@
+{
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none"
+    },
+    "python.analysis.extraPaths": [
+        "./.venv/Lib/site-packages" // Sanal ortamınızın site-packages klasörünü belirtin
+                                     // Linux/Mac'te farklı olabilir: ./.venv/lib/python3.x/site-packages
+    ]
+}

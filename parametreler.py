@@ -53,3 +53,23 @@ ELEKTRIK_BIRIM_FIYATLARI_TL_KWH = [
 BATARYA_BOSALTMA_ESIGI_ORAN = 0.20
 # Batarya doldurma eşiği: Bu oranın üzerine çıkıldığında batarya şarjı durdurulur. (örn. %95)
 BATARYA_DOLDURMA_ESIGI_ORAN = 0.95
+# parametreler.py (Devamı)
+
+# Elektrik Birim Fiyatları (TL/kWh) - Örnek Fiyatlandırma
+# Gündüz (08:00-18:00) ve Gece (18:00-08:00) gibi farklı tarifeler uygulanabilir.
+# Basitlik için her saat için ayrı bir fiyat tanımlayabiliriz veya tarifelere bölebiliriz.
+# Şimdilik basit bir günlük döngü için 24 saatlik fiyat listesi.
+
+# NOT: Bu değerler piyasa koşullarına göre değiştirilebilir.
+# Gündüz tarifesinin daha yüksek, gece tarifesinin daha düşük olduğu bir senaryo.
+ELEKTRIK_BIRIM_FIYATLARI_TL_KWH = [
+    0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.9, 1.0, # 00:00 - 07:00 (gece/sabah düşük)
+    1.2, 1.3, 1.4, 1.5, 1.5, 1.4, 1.3, 1.2, # 08:00 - 15:00 (gündüz yüksek)
+    1.1, 1.0, 0.9, 0.8, 0.8, 0.8, 0.8, 0.8  # 16:00 - 23:00 (akşam düşüşü, geceye geçiş)
+]
+
+# Batarya yönetiminde kullanılacak eşik değerler
+# Batarya boşaltma eşiği: Bu oranın altına düşüldüğünde batarya deşarjı durdurulur. (örn. %20)
+BATARYA_BOSALTMA_ESIGI_ORAN = 0.20
+# Batarya doldurma eşiği: Bu oranın üzerine çıkıldığında batarya şarjı durdurulur. (örn. %95)
+BATARYA_DOLDURMA_ESIGI_ORAN = 0.95
