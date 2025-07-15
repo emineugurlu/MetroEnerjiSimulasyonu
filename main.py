@@ -2,8 +2,8 @@
 
 import pandas as pd
 import simulasyon_motoru as sm
-import gorsellestirme as gorsel
-import parametreler as p
+import gorsellestirme as gorsel # Varsayılan olarak ayrı bir gorsellestirme.py dosyanız olduğunu varsayıyorum
+import parametreler as p       # Varsayılan olarak ayrı bir parametreler.py dosyanız olduğunu varsayıyorum
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
@@ -17,10 +17,12 @@ if __name__ == "__main__":
 
     except FileNotFoundError:
         print(f"Hata: '{excel_dinamik_dosyasi}' bulunamadı. Lütfen Excel dosyasının 'MetroProjesi' klasöründe olduğundan emin olun.")
-        exit()
+        exit() # Dosya bulunamazsa programdan çık
 
     # Adım 2: Dinamik Simülasyonu Akıllı Batarya Entegrasyonu ile Çalıştır
-    print(f"\n\n--- Dinamik (Saatlik) Simülasyon Akıllı EMS ile Çalıştırılıyor ---")
+    # simulasyon_motoru.py dosyanızdaki fonksiyon adını 'akilli_ems_simulasyon' yerine
+    # 'hesapla_dinamik_enerji_dengesi' olarak adlandırdığınızı varsayıyorum
+    print(f"\n\n--- Dinamik (Saatlik) Simülasyon Akıllı EMS ile Çalıştırılıyor ({len(df_dinamik_veriler) / 24:.1f} Günlük) ---") # Dinamik gün sayısı eklendi
 
     dinamik_simulasyon_sonuclari = sm.hesapla_dinamik_enerji_dengesi(
         df_dinamik_veriler,
@@ -29,74 +31,106 @@ if __name__ == "__main__":
         p.MAKS_ISTASYON_TUKETIMI_KWH,
         p.MAKS_GUNES_PANELI_URETIMI_KWH,
         p.MAKS_RUZGAR_TURBINI_URETIMI_KWH,
-        p.VARSAYILAN_GUNLUK_TOPLAM_SEFER,
+        # p.VARSAYILAN_GUNLUK_TOPLAM_SEFER, # Bu parametre dinamik veri ile genellikle kullanılmaz, gerekiyorsa simülasyon motorunda içsel olarak hesaplanmalı
+        
         # Batarya Parametreleri
         p.BATARYA_KAPASITESI_KWH,
         p.SARJ_VERIMLILIGI,
         p.DESARJ_VERIMLILIGI,
         p.BASLANGIC_BATARYA_DOLULUK_ORANI,
-        p.BATARYA_BOSALTMA_ESIGI_ORAN, # Yeni: Batarya Boşaltma Eşiği
-        p.BATARYA_DOLDURMA_ESIGI_ORAN, # Yeni: Batarya Doldurma Eşiği
+        p.BATARYA_BOSALTMA_ESIGI_ORAN,
+        p.BATARYA_DOLDURMA_ESIGI_ORAN,
+        
         # Elektrik Fiyatları Parametresi
-        p.ELEKTRIK_BIRIM_FIYATLARI_TL_KWH # Yeni: Elektrik Birim Fiyatları
+        p.ELEKTRIK_BIRIM_FIYATLARI_TL_KWH, # Tek bir değer yerine dictionary bekliyorsa sim. motorunda ayarlanmalı
+        p.ELEKTRIK_BIRIM_FIYATLARI_TL_KWH_SATIS # Yeni: Satış fiyatını da parametrelerden almalı
     )
 
-    # Dinamik simülasyonun günlük toplamlarını göster
-    print("\n--- Dinamik Simülasyon - Günlük Toplam Enerji Hesaplamaları (Akıllı EMS Entegreli) ---")
+    # Simülasyon sonucu None ise hata mesajı verip çık
+    if dinamik_simulasyon_sonuclari is None:
+        print("Simülasyon sonuçları alınamadı. Lütfen 'simulasyon_motoru.py' dosyasındaki hataları kontrol edin.")
+        exit()
+
+    # Adım 3: Dinamik simülasyonun genel sonuçlarını göster
+    # Artık 'gunluk_toplamlar' anahtarı altında toplu veriler var
+    print("\n--- Dinamik Simülasyon - Toplam Enerji Hesaplamaları (Akıllı EMS Entegreli) ---")
+    
+    # 'gunluk_toplamlar' dictionary'sindeki her öğeyi yazdır
     for key, value in dinamik_simulasyon_sonuclari["gunluk_toplamlar"].items():
-        print(f"{key}: {value:.2f} kWh" if "kWh" in key else f"{key}: {value:.2f} TL") # Maliyeti TL olarak göster
+        if "Maliyet" in key or "Gelir" in key:
+            print(f"{key}: {value:.2f} TL")
+        elif "kg CO2e" in key: # Karbon ayak izi için yeni çıktı formatı
+            print(f"{key}: {value:.2f} kg CO2e")
+        else:
+            print(f"{key}: {value:.2f} kWh")
 
     print("\n--- Dinamik Simülasyon Yorumu (Akıllı EMS Entegreli) ---")
-    net_enerji_dengesi_sebeke = dinamik_simulasyon_sonuclari["gunluk_toplamlar"]["Net Enerji Dengesi (Şebeke Etkisi ile) (kWh)"]
-    toplam_maliyet = dinamik_simulasyon_sonuclari["gunluk_toplamlar"]["Toplam Enerji Maliyeti (TL)"]
+    
+    # Günlük toplamlar dictionary'sinden ilgili değerleri çek
+    net_enerji_dengesi_sebeke = dinamik_simulasyon_sonuclari["gunluk_toplamlar"].get("Net Enerji Dengesi (Şebeke Etkisi ile) (kWh)", 0)
+    toplam_maliyet = dinamik_simulasyon_sonuclari["gunluk_toplamlar"].get("Toplam Enerji Maliyeti (TL)", 0)
+    toplam_karbon_ayak_izi = dinamik_simulasyon_sonuclari["gunluk_toplamlar"].get("Toplam Karbon Ayak İzi (Şebeke Alımından) (kg CO2e)", 0) # Yeni
 
     if net_enerji_dengesi_sebeke < 0:
-        print(f"Bu dinamik senaryoda metro sistemi günlük enerji fazlası vermektedir! (ENERJİ POZİTİF!)")
+        print(f"Bu {dinamik_simulasyon_sonuclari['simulasyon_suresi_gun']:.1f} günlük senaryoda metro sistemi net enerji fazlası vermektedir! (ENERJİ POZİTİF!)")
         print(f"Fazla enerji (şebekeye verilen): {-net_enerji_dengesi_sebeke:.2f} kWh")
     elif net_enerji_dengesi_sebeke == 0:
-        print("Bu dinamik senaryoda metro sistemi günlük enerji dengesindedir (şebekeden alım/verme yok).")
+        print(f"Bu {dinamik_simulasyon_sonuclari['simulasyon_suresi_gun']:.1f} günlük senaryoda metro sistemi net enerji dengesindedir (şebekeden alım/verme yok).")
     else:
-        print(f"Bu dinamik senaryoda metro sistemi günlük enerji tüketmektedir. Enerji açığı (şebekeden alınan): {net_enerji_dengesi_sebeke:.2f} kWh")
+        print(f"Bu {dinamik_simulasyon_sonuclari['simulasyon_suresi_gun']:.1f} günlük senaryoda metro sistemi net enerji tüketmektedir. Enerji açığı (şebekeden alınan): {net_enerji_dengesi_sebeke:.2f} kWh")
 
-    print(f"Günlük Toplam Enerji Maliyeti/Geliri: {toplam_maliyet:.2f} TL")
+    print(f"Toplam Enerji Maliyeti/Geliri: {toplam_maliyet:.2f} TL")
     if toplam_maliyet < 0:
-        print(f"Sistem günlük olarak {abs(toplam_maliyet):.2f} TL gelir elde etmektedir (Enerji Satışı).")
+        print(f"Sistem toplamda {abs(toplam_maliyet):.2f} TL gelir elde etmektedir (Enerji Satışı).")
     elif toplam_maliyet > 0:
-        print(f"Sistem günlük olarak {toplam_maliyet:.2f} TL maliyet oluşturmaktadır (Enerji Alımı).")
+        print(f"Sistem toplamda {toplam_maliyet:.2f} TL maliyet oluşturmaktadır (Enerji Alımı).")
     else:
-        print(f"Sistem günlük olarak enerji maliyeti/geliri dengesindedir.")
-
+        print(f"Sistem toplamda enerji maliyeti/geliri dengesindedir.")
+    
+    print(f"Şebekeden alım kaynaklı toplam karbon ayak izi: {toplam_karbon_ayak_izi:.2f} kg CO2e") # Karbon ayak izi çıktısı
 
     # Adım 4: Görselleştirmeleri Oluştur
-    # Günlük toplamlar için çubuk grafik (Şebeke Alım/Verme dahil)
-    gorsel.enerji_dengesi_cubuk_grafigi_olustur(
-        dinamik_simulasyon_sonuclari["gunluk_toplamlar"],
-        grafik_adi="Dinamik Simülasyon - Günlük Toplam Enerji Dengesi (Akıllı EMS ile)"
-    )
+    # gorsellestirme.py dosyanızın güncellenmiş simulasyon_motoru.py'den gelen
+    # 'simulasyon_sonuclari' dictionary'sinin yapısına uygun olduğunu varsayıyorum.
+    # Özellikle 'toplam_saat' ve 'simulasyon_suresi_gun' değişkenlerini alabilmeli.
 
-    # Saatlik veriler için çizgi grafik (Şebeke Alım/Verme gösteren)
-    gorsel.enerji_dengesi_cizgi_grafigi_olustur(
-        dinamik_simulasyon_sonuclari["saatlik_veri"],
-        grafik_adi="Dinamik Simülasyon - Saatlik Enerji Akışı (Akıllı EMS ile)"
-    )
+    # main.py dosyasındaki görselleştirme kısmını BULUN ve AŞAĞIDAKİ GİBİ DÜZELTİN:
 
-    # Saatlik Batarya Doluluk Grafiği
-    gorsel.batarya_doluluk_grafigi_olustur(
-        dinamik_simulasyon_sonuclari["saatlik_veri"],
-        grafik_adi="Dinamik Simülasyon - Saatlik Batarya Doluluk Seviyesi (Akıllı EMS ile)"
-    )
+# Günlük Toplam Enerji Dengesi Çubuk Grafiği (Batarya ve Şebeke ile)
+gorsel.enerji_dengesi_cubuk_grafigi_olustur(
+    sonuclar_dict={ # Burayı sonuclar_dict olarak değiştirdik
+        "Toplam Sistem Net Tüketimi (kWh)": dinamik_simulasyon_sonuclari['gunluk_toplamlar']["Toplam Sistem Net Tüketimi (kWh)"],
+        "Güneş Paneli Üretimi (kWh)": dinamik_simulasyon_sonuclari['gunluk_toplamlar']["Güneş Paneli Üretimi (kWh)"],
+        "Rüzgar Türbini Üretimi (kWh)": dinamik_simulasyon_sonuclari['gunluk_toplamlar']["Rüzgar Türbini Üretimi (kWh)"],
+        "Günlük Şebekeden Alım (kWh)": dinamik_simulasyon_sonuclari['gunluk_toplamlar']["Şebekeden Toplam Alım (kWh)"],
+        "Günlük Şebekeye Verme (kWh)": dinamik_simulasyon_sonuclari['gunluk_toplamlar']["Şebekeye Toplam Verme (kWh)"]
+    },
+    grafik_adi="Dinamik Simülasyon - Günlük Toplam Enerji Dengesi (Akıllı EMS ile)"
+)
 
-    # Saatlik Batarya Şarj/Deşarj Akım Grafiği
-    gorsel.batarya_akim_grafigi_olustur(
-        dinamik_simulasyon_sonuclari["saatlik_veri"],
-        grafik_adi="Dinamik Simülasyon - Saatlik Batarya Şarj/Deşarj Akışı (Akıllı EMS ile)"
-    )
+# Saatlik Enerji Akışı Çizgi Grafiği (Şebeke ile)
+# Burada simulasyon_motoru'ndan dönen 'saatlik_veri' anahtarındaki DataFrame'i doğrudan gönderiyoruz.
+gorsel.enerji_dengesi_cizgi_grafigi_olustur(
+    saatlik_veri_df=dinamik_simulasyon_sonuclari['saatlik_veri'], # parametre adı saatlik_veri_df olarak düzeltildi
+    grafik_adi="Dinamik Simülasyon - Saatlik Enerji Akışı (Akıllı EMS ile)"
+)
 
-    # Yeni: Saatlik Enerji Maliyeti/Geliri Grafiği
-    gorsel.saatlik_maliyet_grafigi_olustur(
-        dinamik_simulasyon_sonuclari["saatlik_veri"],
-        grafik_adi="Dinamik Simülasyon - Saatlik Enerji Maliyeti/Geliri (Akıllı EMS ile)"
-    )
+# Saatlik Batarya Doluluk Seviyesi Grafiği
+gorsel.batarya_doluluk_grafigi_olustur(
+    saatlik_veri_df=dinamik_simulasyon_sonuclari['saatlik_veri'], # parametre adı saatlik_veri_df olarak düzeltildi
+    grafik_adi="Dinamik Simülasyon - Saatlik Batarya Doluluk Seviyesi (Akıllı EMS ile)"
+)
 
-    print("\n--- Dinamik Simülasyon ve Tüm Grafikler Sonlandı ---")
-    plt.show() # Tüm grafik pencerelerinin açık kalmasını sağlar
+# Saatlik Batarya Şarj/Deşarj Akışı Grafiği
+gorsel.batarya_akim_grafigi_olustur(
+    saatlik_veri_df=dinamik_simulasyon_sonuclari['saatlik_veri'], # parametre adı saatlik_veri_df olarak düzeltildi
+    grafik_adi="Dinamik Simülasyon - Saatlik Batarya Şarj/Deşarj Akışı (Akıllı EMS ile)"
+)
+
+# Saatlik Enerji Maliyeti/Geliri Grafiği
+gorsel.saatlik_maliyet_grafigi_olustur(
+    saatlik_veri_df=dinamik_simulasyon_sonuclari['saatlik_veri'], # parametre adı saatlik_veri_df olarak düzeltildi
+    grafik_adi="Dinamik Simülasyon - Saatlik Enerji Maliyeti/Geliri (Akıllı EMS ile)"
+)
+
+plt.show() # Tüm plt.show(block=False) çağrılarından sonra bu tek plt.show() hepsini görüntüler

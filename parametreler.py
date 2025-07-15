@@ -73,3 +73,11 @@ ELEKTRIK_BIRIM_FIYATLARI_TL_KWH = [
 BATARYA_BOSALTMA_ESIGI_ORAN = 0.20
 # Batarya doldurma eşiği: Bu oranın üzerine çıkıldığında batarya şarjı durdurulur. (örn. %95)
 BATARYA_DOLDURMA_ESIGI_ORAN = 0.95
+# parametreler.py
+# ... diğer parametreler ...
+
+# Elektrik Fiyatları
+ELEKTRIK_BIRIM_FIYATLARI_TL_KWH = 2.0  # Şebekeden alım fiyatı (örnek)
+ELEKTRIK_BIRIM_FIYATLARI_TL_KWH_SATIS = 1.0 # Şebekeye satış fiyatı (örnek) - YENİ EKLENEN SATIR
+
+# ... diğer parametreler ...
