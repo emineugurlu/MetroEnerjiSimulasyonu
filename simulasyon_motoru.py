@@ -1,31 +1,17 @@
-# simulasyon_motoru.py dosyası
-
 import pandas as pd
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum, PULP_CBC_CMD, LpStatus
-import matplotlib.pyplot as plt # Sadece hata ayıklama veya geçici görselleştirme için kalabilir
 import numpy as np
 
-# --- 1. Sabit Tanımlamalar ---
-# Bu sabitler, simülasyon motorunun doğrudan kullandığı parametrelerdir.
-# Eğer bu değerler 'parametreler.py' dosyasından geliyorsa, o zaman buradaki tanımları kaldırıp
-# 'hesapla_dinamik_enerji_dengesi' fonksiyonuna parametre olarak geçirmelisiniz.
-# Ancak şimdilik main.py'den gelen kafa karışıklığını gidermek için burada tutuyorum
-# ve p. dosyasındaki değerleri buradaki fonksiyonların parametresi olarak almayacağız.
-# Bunun yerine, main.py'den gelen değerleri fonksiyon içinde kullanacağız.
-
-# Dinamik veri yükleme fonksiyonu (main.py'de zaten çağrılıyor)
+# Dinamik veri yükleme fonksiyonu
 def dinamik_veri_yukle(dosya_yolu):
     try:
         df = pd.read_excel(dosya_yolu)
-        # print(f"--- '{dosya_yolu}' dosyasından dinamik veriler yüklendi ---") # Main.py'de var
         return df
     except FileNotFoundError:
         print(f"Hata: '{dosya_yolu}' bulunamadı. Lütfen dosya yolunu kontrol edin.")
         return None
 
 # --- Akıllı EMS ile Simülasyon Fonksiyonu ---
-# Bu fonksiyon şimdi dışarıdan tüm gerekli parametreleri alacak.
-# Bu sayede simulasyon_motoru.py bağımsız olacak ve parametreler.py'ye bağımlı olmayacak.
 def hesapla_dinamik_enerji_dengesi(
     dinamik_veriler_df,
     tren_basina_maks_tuketim_kwh,
@@ -39,8 +25,18 @@ def hesapla_dinamik_enerji_dengesi(
     baslangic_batarya_doluluk_orani,
     batarya_bosaltma_esigi_oran,
     batarya_doldurma_esigi_oran,
-    elektrik_birim_fiyatlari_tl_kwh, # Şebekeden alım fiyatı
-    elektrik_birim_fiyatlari_tl_kwh_satis # Şebekeye satış fiyatı
+    sebeke_alim_fiyati_tl_kwh,
+    sebeke_satis_fiyati_tl_kwh,
+    karbon_emisyon_faktoru_sebeke,
+    gunes_paneli_kurulum_maliyeti_tl_kwp,
+    ruzgar_turbini_kurulum_maliyeti_tl_kw,
+    batarya_kurulum_maliyeti_tl_kwh,
+    ems_sistemi_kurulum_maliyeti_tl,
+    gunes_paneli_om_orani,
+    ruzgar_turbini_om_orani,
+    batarya_om_orani,
+    gunes_paneli_kapasitesi_kwp,
+    ruzgar_turbini_kapasitesi_kw
 ):
     if dinamik_veriler_df is None:
         return None
@@ -52,45 +48,35 @@ def hesapla_dinamik_enerji_dengesi(
     print(f"\n--- Dinamik ({toplam_saat} Saatlik / {simulasyon_suresi_gun:.1f} Günlük) Simülasyon Akıllı EMS ile Çalıştırılıyor ---")
 
     # Sabitler (Fonksiyon parametrelerinden türetilenler veya içsel sabitler)
-    # Maks ve min batarya doluluk seviyeleri (kWh cinsinden)
     maks_sarj_deposu_kwh = batarya_kapasitesi_kwh * batarya_doldurma_esigi_oran
     min_sarj_deposu_kwh = batarya_kapasitesi_kwh * batarya_bosaltma_esigi_oran
     
-    # Batarya şarj/deşarj maksimum gücü (örneğin kapasitenin %20'si gibi, yoksa parametre olarak alınmalı)
-    # Burada varsayılan olarak kapasitenin 1/5'i olarak belirlenmiştir.
-    maks_sarj_gucu = batarya_kapasitesi_kwh / 5 
-    maks_desarj_gucu = batarya_kapasitesi_kwh / 5
-
-    # Karbon Emisyon Faktörü (bu değer p. dosyasından gelmeli, gelmiyorsa burada sabit kalsın)
-    KARBON_EMISYON_FAKTORU_SEBEKE = 0.45 # kg CO2e/kWh (Örnek değer)
+    maks_sarj_gucu = batarya_kapasitesi_kwh 
+    maks_desarj_gucu = batarya_kapasitesi_kwh 
 
     # Sonuçları depolamak için listeler
     saatlik_tren_tuketimi_list = []
     saatlik_istasyon_tuketimi_list = []
     saatlik_gunes_uretimi_list = []
     saatlik_ruzgar_uretimi_list = []
-    saatlik_net_tuketim_list = [] # Bu listede tüketim - üretim olacak
-    saatlik_batarya_doluluk_list = [batarya_kapasitesi_kwh * baslangic_batarya_doluluk_orani] # Başlangıç doluluğu (kWh)
+    saatlik_net_tuketim_list = []
+    saatlik_batarya_doluluk_list = [batarya_kapasitesi_kwh * baslangic_batarya_doluluk_orani]
     saatlik_batarya_sarj_akisi_list = []
     saatlik_batarya_desarj_akisi_list = []
     saatlik_sebekeden_alim_list = []
     saatlik_sebekeye_verme_list = []
-    saatlik_maliyet_list = [] # Her saatteki net enerji maliyeti/geliri
+    saatlik_maliyet_list = []
 
     # Simülasyon Döngüsü
-  # Simülasyon Döngüsü
     for t in range(toplam_saat):
         # Dinamik Verileri Çek
-        tren_sefer_yogunlugu = dinamik_veriler_df.loc[t, 'TrenSeferYogunluguOrani'] # <-- BURASI GÜNCELLENDİ!
+        tren_sefer_yogunlugu = dinamik_veriler_df.loc[t, 'TrenSeferYogunluguOrani']
         istasyon_tuketim_orani = dinamik_veriler_df.loc[t, 'IstasyonTuketimOrani']
-        gunes_radyasyon_orani = dinamik_veriler_df.loc[t, 'GunesRadyasyonOrani'] # Excel sütun adını tekrar kontrol edin!
+        gunes_radyasyon_orani = dinamik_veriler_df.loc[t, 'GunesRadyasyonOrani']
         ruzgar_hizi_orani = dinamik_veriler_df.loc[t, 'RuzgarHiziOrani']
 
-
         # Hesaplamalar
-        # Not: Tren ve İstasyon tüketimleri doğrudan p. dosyasından gelen MAKS değerler ve oranlarla hesaplanır
         current_tren_tuketimi = tren_basina_maks_tuketim_kwh * tren_sefer_yogunlugu
-        # Frenleme geri kazanımı burada düşülmeli
         current_net_tren_tuketimi = current_tren_tuketimi * (1 - frenleme_geri_kazanim_orani)
         
         current_istasyon_tuketimi = maks_istasyon_tuketimi_kwh * istasyon_tuketim_orani
@@ -104,9 +90,8 @@ def hesapla_dinamik_enerji_dengesi(
         
         # Anlık net enerji ihtiyacı (pozitif ise ihtiyaç, negatif ise fazlalık)
         anlik_net_ihtiyac = (current_net_tren_tuketimi + current_istasyon_tuketimi) - \
-                             (current_gunes_uretimi + current_ruzgar_uretimi)
+                            (current_gunes_uretimi + current_ruzgar_uretimi)
         saatlik_net_tuketim_list.append(anlik_net_ihtiyac)
-
 
         # Optimizasyon Modeli (Pulp ile)
         prob = LpProblem("EnerjiYonetimi", LpMinimize)
@@ -118,14 +103,13 @@ def hesapla_dinamik_enerji_dengesi(
         sebekeye_verme_kwh = LpVariable("SebekeyeVermeKWH", 0)
 
         # Amaç Fonksiyonu: Maliyeti Minimize Et (Alış maliyeti - Satış geliri)
-        prob += (sebekeden_alim_kwh * elektrik_birim_fiyatlari_tl_kwh) - \
-                (sebekeye_verme_kwh * elektrik_birim_fiyatlari_tl_kwh_satis)
+        prob += (sebekeden_alim_kwh * sebeke_alim_fiyati_tl_kwh) - \
+                (sebekeye_verme_kwh * sebeke_satis_fiyati_tl_kwh)
 
         # Kısıtlar
         onceki_batarya_doluluk = saatlik_batarya_doluluk_list[-1]
 
         # Enerji Denge Kısıtı:
-        # Net İhtiyaç = Şebekeden Alım - Şebekeye Verme + Batarya Şarj - Batarya Deşarj
         prob += anlik_net_ihtiyac == (sebekeden_alim_kwh - sebekeye_verme_kwh) + \
                                       (batarya_sarj_kwh / sarj_verimliligi) - \
                                       (batarya_desarj_kwh * desarj_verimliligi)
@@ -134,13 +118,8 @@ def hesapla_dinamik_enerji_dengesi(
         prob += (onceki_batarya_doluluk + batarya_sarj_kwh - batarya_desarj_kwh) >= min_sarj_deposu_kwh
         prob += (onceki_batarya_doluluk + batarya_sarj_kwh - batarya_desarj_kwh) <= maks_sarj_deposu_kwh
         
-        # Batarya aynı anda hem şarj hem de deşarj olamaz (Pulp bunu optimize eder ancak bazen açık kısıt iyi olur)
-        # lpSum ile batarya_sarj_kwh ve batarya_desarj_kwh'nın toplamı, 
-        # sadece birinin pozitif olabileceği bir şekilde yönetilebilir.
-        # Basitlik için Pulp'un optimal çözümü bulmasına izin veriyoruz.
-
         # Optimizasyonu Çalıştır
-        prob.solve(PULP_CBC_CMD(msg=0)) # msg=0 ile Pulp'ın detaylı çıktılarını gizle
+        prob.solve(PULP_CBC_CMD(msg=0))
 
         # Sonuçları al
         current_batarya_sarj = batarya_sarj_kwh.varValue
@@ -148,19 +127,19 @@ def hesapla_dinamik_enerji_dengesi(
         current_sebekeden_alim = sebekeden_alim_kwh.varValue
         current_sebekeye_verme = sebekeye_verme_kwh.varValue
         
-        # Null değer kontrolü (Pulp çözemezse None dönebilir)
+        # Null değer kontrolü
         if current_batarya_sarj is None: current_batarya_sarj = 0.0
         if current_batarya_desarj is None: current_batarya_desarj = 0.0
         if current_sebekeden_alim is None: current_sebekeden_alim = 0.0
         if current_sebekeye_verme is None: current_sebekeye_verme = 0.0
 
         saatlik_batarya_sarj_akisi_list.append(current_batarya_sarj)
-        saatlik_batarya_desarj_akisi_list.append(-current_batarya_desarj) # Deşarjı negatif olarak kaydet
+        saatlik_batarya_desarj_akisi_list.append(-current_batarya_desarj)
 
         # Batarya doluluğunu güncelle ve listeye ekle
         yeni_batarya_doluluk = onceki_batarya_doluluk + current_batarya_sarj - current_batarya_desarj
         
-        # Sınırları aşma kontrolü (kayan nokta hatalarına karşı)
+        # Sınırları aşma kontrolü
         yeni_batarya_doluluk = max(min_sarj_deposu_kwh, min(maks_sarj_deposu_kwh, yeni_batarya_doluluk))
         saatlik_batarya_doluluk_list.append(yeni_batarya_doluluk)
 
@@ -168,8 +147,10 @@ def hesapla_dinamik_enerji_dengesi(
         saatlik_sebekeye_verme_list.append(current_sebekeye_verme)
         
         # Saatlik maliyet hesaplaması
-        current_maliyet = (current_sebekeden_alim * elektrik_birim_fiyatlari_tl_kwh) - \
-                          (current_sebekeye_verme * elektrik_birim_fiyatlari_tl_kwh_satis)
+        if LpStatus[prob.status] == "Optimal":
+            current_maliyet = prob.objective.value()
+        else:
+            current_maliyet = 0.0 
         saatlik_maliyet_list.append(current_maliyet)
 
     # Batarya doluluk listesindeki son elemanı çıkar (fazla eklenen)
@@ -187,43 +168,57 @@ def hesapla_dinamik_enerji_dengesi(
     toplam_gunes_uretimi = sum(saatlik_gunes_uretimi_list)
     toplam_ruzgar_uretimi = sum(saatlik_ruzgar_uretimi_list)
     
-    toplam_batarya_sarj = sum(saatlik_batarya_sarj_akisi_list) # Zaten pozitif değerler
-    toplam_batarya_desarj = sum([abs(val) for val in saatlik_batarya_desarj_akisi_list]) # Negatifleri pozitif yap
+    toplam_batarya_sarj = sum(saatlik_batarya_sarj_akisi_list)
+    toplam_batarya_desarj = sum([abs(val) for val in saatlik_batarya_desarj_akisi_list])
 
     toplam_sebekeden_alim = sum(saatlik_sebekeden_alim_list)
     toplam_sebekeye_verme = sum(saatlik_sebekeye_verme_list)
     
-    # Net Enerji Dengesi (Şebeke Etkisi ile): Pozitif = Şebekeden Net Alım, Negatif = Şebekeye Net Verim
+    # Net Enerji Dengesi (Şebeke Etkisi ile)
     net_enerji_dengesi_sebeke = toplam_sebekeden_alim - toplam_sebekeye_verme
     
+    # Toplam enerji maliyeti
     toplam_enerji_maliyeti = sum(saatlik_maliyet_list)
     
-    # Karbon Ayak İzi Hesaplaması (Şebekeden Alım kaynaklı)
-    toplam_karbon_ayak_izi = toplam_sebekeden_alim * KARBON_EMISYON_FAKTORU_SEBEKE
+    # Karbon Ayak İzi Hesaplaması
+    toplam_karbon_ayak_izi = toplam_sebekeden_alim * karbon_emisyon_faktoru_sebeke
 
-    # simulasyon_motoru.py dosyasındaki 'sonuclar' dictionary'si içinde sadece 'saatlik_veri' kısmını güncelliyoruz
+    # Toplam Yatırım (CAPEX) Maliyeti Hesaplaması
+    toplam_capex = (gunes_paneli_kapasitesi_kwp * gunes_paneli_kurulum_maliyeti_tl_kwp) + \
+                   (ruzgar_turbini_kapasitesi_kw * ruzgar_turbini_kurulum_maliyeti_tl_kw) + \
+                   (batarya_kapasitesi_kwh * batarya_kurulum_maliyeti_tl_kwh) + \
+                   ems_sistemi_kurulum_maliyeti_tl
+
+    # Yıllık İşletme ve Bakım (OPEX) Maliyeti Hesaplaması
+    gunluk_opex = (gunes_paneli_kapasitesi_kwp * gunes_paneli_kurulum_maliyeti_tl_kwp * gunes_paneli_om_orani +
+                   ruzgar_turbini_kapasitesi_kw * ruzgar_turbini_kurulum_maliyeti_tl_kw * ruzgar_turbini_om_orani +
+                   batarya_kapasitesi_kwh * batarya_kurulum_maliyeti_tl_kwh * batarya_om_orani) / 365 
+
+    # Bu simülasyon süresi boyunca toplam OPEX
+    toplam_opex_simulasyon = gunluk_opex * simulasyon_suresi_gun
+
+    # Net Kar/Zarar (Günlük Simülasyon Sonucu)
+    gunluk_net_kar_zarar = (-toplam_enerji_maliyeti) - toplam_opex_simulasyon 
 
     # Sonuçları dictionary olarak düzenle ve döndür
     sonuclar = {
-        'saatlik_veri': { # Saatlik detaylı veriler
+        'saatlik_veri': {
             'Saat': list(range(toplam_saat)),
             'Tren Tuketimi': saatlik_tren_tuketimi_list,
             'Istasyon Tuketimi': saatlik_istasyon_tuketimi_list,
             'Gunes Uretimi': saatlik_gunes_uretimi_list,
             'Ruzgar Uretimi': saatlik_ruzgar_uretimi_list,
-            
-            # --- BURADAKİ KEY İSİMLERİNİ GORSELLESTIRME.PY'DEKİ KULLANIMLARLA EŞLEŞTİRDİK ---
-            'Toplam Sistem Net Tüketimi (kWh)': saatlik_net_tuketim_list, # Hata veren buydu, düzeltildi
-            'Toplam Yenilenebilir Üretim (kWh)': [g + r for g, r in zip(saatlik_gunes_uretimi_list, saatlik_ruzgar_uretimi_list)], # Yeni eklendi (çizgi grafik için)
-            'Batarya Doluluk (kWh)': saatlik_batarya_doluluk_list, # Gorsellestirme ile uyumlu hale getirildi
-            'Batarya Doluluk Oranı (%)': [((d / batarya_kapasitesi_kwh) * 100) for d in saatlik_batarya_doluluk_list], # Yeni eklendi
-            'Bataryaya Giden (kWh)': saatlik_batarya_sarj_akisi_list, # Gorsellestirme ile uyumlu hale getirildi
-            'Bataryadan Çekilen (kWh)': [abs(val) for val in saatlik_batarya_desarj_akisi_list], # Gorsellestirme ile uyumlu hale getirildi
-            'Şebekeden Alım (kWh)': saatlik_sebekeden_alim_list, # Gorsellestirme ile uyumlu hale getirildi
-            'Şebekeye Verme (kWh)': saatlik_sebekeye_verme_list, # Gorsellestirme ile uyumlu hale getirildi
+            'Toplam Sistem Net Tüketimi (kWh)': saatlik_net_tuketim_list,
+            'Toplam Yenilenebilir Üretim (kWh)': [g + r for g, r in zip(saatlik_gunes_uretimi_list, saatlik_ruzgar_uretimi_list)],
+            'Batarya Doluluk (kWh)': saatlik_batarya_doluluk_list,
+            'Batarya Doluluk Oranı (%)': [((d / batarya_kapasitesi_kwh) * 100) for d in saatlik_batarya_doluluk_list],
+            'Bataryaya Giden (kWh)': saatlik_batarya_sarj_akisi_list,
+            'Bataryadan Çekilen (kWh)': [abs(val) for val in saatlik_batarya_desarj_akisi_list],
+            'Şebekeden Alım (kWh)': saatlik_sebekeden_alim_list,
+            'Şebekeye Verme (kWh)': saatlik_sebekeye_verme_list,
             'Saatlik Maliyet (TL)': saatlik_maliyet_list
         },
-        'gunluk_toplamlar': { # Toplam değerler (Simülasyon süresi boyunca)
+        'gunluk_toplamlar': {
             "Toplam Tren Tüketimi (kWh)": toplam_tren_tuketimi,
             "Geri Kazanılan Enerji (kWh)": geri_kazanilan_enerji,
             "Net Tren Tüketimi (kWh)": net_tren_tuketimi,
@@ -238,7 +233,10 @@ def hesapla_dinamik_enerji_dengesi(
             "Şebekeye Toplam Verme (kWh)": toplam_sebekeye_verme,
             "Net Enerji Dengesi (Şebeke Etkisi ile) (kWh)": net_enerji_dengesi_sebeke,
             "Toplam Enerji Maliyeti (TL)": toplam_enerji_maliyeti,
-            "Toplam Karbon Ayak İzi (Şebeke Alımından) (kg CO2e)": toplam_karbon_ayak_izi
+            "Toplam Karbon Ayak İizi (Şebeke Alımından) (kg CO2e)": toplam_karbon_ayak_izi,
+            "Tahmini Toplam Yatırım Maliyeti (CAPEX) (TL)": toplam_capex,
+            "Tahmini Günlük İşletme ve Bakım (OPEX) Maliyeti (TL)": gunluk_opex,
+            "Simülasyon Dönemi Net Kar/Zarar (TL)": gunluk_net_kar_zarar
         },
         'toplam_saat': toplam_saat,
         'simulasyon_suresi_gun': simulasyon_suresi_gun,
@@ -246,5 +244,3 @@ def hesapla_dinamik_enerji_dengesi(
     }
 
     return sonuclar
-
-# NOT: Diğer kodlar aynı kalacak. Sadece bu 'saatlik_veri' dictionary'si içeriği değişti.

@@ -81,4 +81,53 @@ BATARYA_DOLDURMA_ESIGI_ORAN = 0.95
 ELEKTRIK_BIRIM_FIYATLARI_TL_KWH = 2.0  # Şebekeden alım fiyatı (örnek)
 ELEKTRIK_BIRIM_FIYATLARI_TL_KWH_SATIS = 1.0 # Şebekeye satış fiyatı (örnek) - YENİ EKLENEN SATIR
 
-# ... diğer parametreler ...
+# ==============================================================================
+# EKONOMİK PARAMETRELER
+# ==============================================================================
+
+# Enerji Alım/Satım Fiyatları (TL/kWh) - Gerçekçi piyasa fiyatlarına göre güncellenebilir
+# Bu değerler, günün farklı saatlerinde değişen tarifeleri yansıtacak şekilde bir liste olarak tanımlanabilir.
+# Şimdilik sabit birer değer olarak başlayalım, sonra daha detaylı hale getirebiliriz.
+SEBEKE_ALIM_FIYATI_TL_KWH = 2.5  # Şebekeden enerji alım maliyeti (Örnek değer)
+SEBEKE_SATIS_FIYATI_TL_KWH = 1.8  # Şebekeye enerji satış geliri (Örnek değer)
+
+# Yatırım (CAPEX) Maliyetleri (TL) - Birim maliyetler üzerinden hesaplanabilir
+GUNES_PANELI_KURULUM_MALIYETI_TL_KWp = 6000 # Güneş paneli kWp başına kurulum maliyeti (Örnek değer)
+RUZGAR_TURBINI_KURULUM_MALIYETI_TL_KW = 10000 # Rüzgar türbini kW başına kurulum maliyeti (Örnek değer)
+BATARYA_KURULUM_MALIYETI_TL_KWH = 7000 # Batarya kWh başına kurulum maliyeti (Örnek değer)
+EMS_SISTEMI_KURULUM_MALIYETI_TL = 500000 # EMS sisteminin kurulum maliyeti (Sabit örnek değer)
+
+# İşletme ve Bakım (OPEX) Maliyetleri (Yıllık Yüzde)
+GUNES_PANELI_OM_ORANI = 0.015 # Yıllık O&M maliyeti (kurulum maliyetinin %'si)
+RUZGAR_TURBINI_OM_ORANI = 0.02 # Yıllık O&M maliyeti (kurulum maliyetinin %'si)
+BATARYA_OM_ORANI = 0.025 # Yıllık O&M maliyeti (kurulum maliyetinin %'si)
+# parametreler.py
+
+# ... (Diğer parametreleriniz) ...
+
+# Örnek değerler, sizin projenizin ihtiyaçlarına göre bu değerleri ayarlayın
+TREN_BASINA_MAKS_TUKETIM_KWH = 500
+FRENLEME_GERI_KAZANIM_ORANI = 0.3
+MAKS_ISTASYON_TUKETIMI_KWH = 200
+MAKS_GUNES_PANELI_URETIMI_KWH = 1000
+MAKS_RUZGAR_TURBINI_URETIMI_KWH = 500
+BATARYA_KAPASITESI_KWH = 20000
+BATARYA_SARJ_VERIMI = 0.95  # <-- BU SATIRI EKLEYİN VEYA KONTROL EDİN!
+BATARYA_DESARJ_VERIMI = 0.95 # <-- BU SATIRI EKLEYİN VEYA KONTROL EDİN!
+BATARYA_ILK_DOLULUK_ORANI = 0.7
+BATARYA_BOSALTMA_ESIGI_ORAN = 0.2
+BATARYA_DOLDURMA_ESIGI_ORAN = 0.95
+SEBEKE_ALIM_FIYATI_TL_KWH = 3.0
+SEBEKE_SATIS_FIYATI_TL_KWH = 1.0
+KARBON_EMISYON_FAKTORU_SEBEKE = 0.4 # kg CO2e/kWh
+GUNES_PANELI_KURULUM_MALIYETI_TL_KWP = 5000 # TL/kWp
+RUZGAR_TURBINI_KURULUM_MALIYETI_TL_KW = 7000 # TL/kW
+BATARYA_KURULUM_MALIYETI_TL_KWH = 2000 # TL/kWh
+EMS_SISTEMI_KURULUM_MALIYETI_TL = 50000 # TL
+GUNES_PANELI_OM_ORANI = 0.01 # Yüzde olarak (örneğin %1)
+RUZGAR_TURBINI_OM_ORANI = 0.02 # Yüzde olarak (örneğin %2)
+BATARYA_OM_ORANI = 0.03 # Yüzde olarak (örneğin %3)
+GUNES_PANELI_KAPASITESI_KWP = 100000 # KWP cinsinden kurulu güç
+RUZGAR_TURBINI_KAPASITESI_KW = 50000 # KW cinsinden kurulu güç
+
+DINAMIK_VERI_DOSYA_YOLU = 'dinamik_veriler.xlsx' # Dosyanızın adını ve yolunu kontrol edin
