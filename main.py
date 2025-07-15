@@ -89,16 +89,20 @@ if __name__ == "__main__":
     
     print(f"Şebekeden alım kaynaklı toplam karbon ayak izi: {toplam_karbon_ayak_izi:.2f} kg CO2e") # Karbon ayak izi çıktısı
 
+   # main.py dosyasında, dinamik_simulasyon_sonuclari hesaplandıktan sonra ve
+# görselleştirme fonksiyonlarını çağırmadan hemen önce bu satırı ekleyin:
+
+    # Saatlik veriyi Pandas DataFrame'e dönüştür
+    saatlik_veri_df_gorsellestirme = pd.DataFrame(dinamik_simulasyon_sonuclari['saatlik_veri'])
+
     # Adım 4: Görselleştirmeleri Oluştur
-    # gorsellestirme.py dosyanızın güncellenmiş simulasyon_motoru.py'den gelen
-    # 'simulasyon_sonuclari' dictionary'sinin yapısına uygun olduğunu varsayıyorum.
-    # Özellikle 'toplam_saat' ve 'simulasyon_suresi_gun' değişkenlerini alabilmeli.
+    # ...
+    # Aşağıdaki fonksiyon çağrılarında da simulasyon_sonuclari['saatlik_veri'] yerine
+    # saatlik_veri_df_gorsellestirme değişkenini kullanacağız.
 
-    # main.py dosyasındaki görselleştirme kısmını BULUN ve AŞAĞIDAKİ GİBİ DÜZELTİN:
-
-# Günlük Toplam Enerji Dengesi Çubuk Grafiği (Batarya ve Şebeke ile)
+# Günlük Toplam Enerji Dengesi Çubuk Grafiği (Burada saatlik veri_df kullanılmıyor, olduğu gibi kalabilir)
 gorsel.enerji_dengesi_cubuk_grafigi_olustur(
-    sonuclar_dict={ # Burayı sonuclar_dict olarak değiştirdik
+    sonuclar_dict={ 
         "Toplam Sistem Net Tüketimi (kWh)": dinamik_simulasyon_sonuclari['gunluk_toplamlar']["Toplam Sistem Net Tüketimi (kWh)"],
         "Güneş Paneli Üretimi (kWh)": dinamik_simulasyon_sonuclari['gunluk_toplamlar']["Güneş Paneli Üretimi (kWh)"],
         "Rüzgar Türbini Üretimi (kWh)": dinamik_simulasyon_sonuclari['gunluk_toplamlar']["Rüzgar Türbini Üretimi (kWh)"],
@@ -109,28 +113,27 @@ gorsel.enerji_dengesi_cubuk_grafigi_olustur(
 )
 
 # Saatlik Enerji Akışı Çizgi Grafiği (Şebeke ile)
-# Burada simulasyon_motoru'ndan dönen 'saatlik_veri' anahtarındaki DataFrame'i doğrudan gönderiyoruz.
 gorsel.enerji_dengesi_cizgi_grafigi_olustur(
-    saatlik_veri_df=dinamik_simulasyon_sonuclari['saatlik_veri'], # parametre adı saatlik_veri_df olarak düzeltildi
+    saatlik_veri_df=saatlik_veri_df_gorsellestirme, # <-- BURASI DEĞİŞTİ!
     grafik_adi="Dinamik Simülasyon - Saatlik Enerji Akışı (Akıllı EMS ile)"
 )
 
 # Saatlik Batarya Doluluk Seviyesi Grafiği
 gorsel.batarya_doluluk_grafigi_olustur(
-    saatlik_veri_df=dinamik_simulasyon_sonuclari['saatlik_veri'], # parametre adı saatlik_veri_df olarak düzeltildi
+    saatlik_veri_df=saatlik_veri_df_gorsellestirme, # <-- BURASI DEĞİŞTİ!
     grafik_adi="Dinamik Simülasyon - Saatlik Batarya Doluluk Seviyesi (Akıllı EMS ile)"
 )
 
 # Saatlik Batarya Şarj/Deşarj Akışı Grafiği
 gorsel.batarya_akim_grafigi_olustur(
-    saatlik_veri_df=dinamik_simulasyon_sonuclari['saatlik_veri'], # parametre adı saatlik_veri_df olarak düzeltildi
+    saatlik_veri_df=saatlik_veri_df_gorsellestirme, # <-- BURASI DEĞİŞTİ!
     grafik_adi="Dinamik Simülasyon - Saatlik Batarya Şarj/Deşarj Akışı (Akıllı EMS ile)"
 )
 
 # Saatlik Enerji Maliyeti/Geliri Grafiği
 gorsel.saatlik_maliyet_grafigi_olustur(
-    saatlik_veri_df=dinamik_simulasyon_sonuclari['saatlik_veri'], # parametre adı saatlik_veri_df olarak düzeltildi
+    saatlik_veri_df=saatlik_veri_df_gorsellestirme, # <-- BURASI DEĞİŞTİ!
     grafik_adi="Dinamik Simülasyon - Saatlik Enerji Maliyeti/Geliri (Akıllı EMS ile)"
 )
 
-plt.show() # Tüm plt.show(block=False) çağrılarından sonra bu tek plt.show() hepsini görüntüler
+plt.show()

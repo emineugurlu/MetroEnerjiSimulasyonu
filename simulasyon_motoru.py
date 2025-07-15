@@ -201,6 +201,8 @@ def hesapla_dinamik_enerji_dengesi(
     # Karbon Ayak İzi Hesaplaması (Şebekeden Alım kaynaklı)
     toplam_karbon_ayak_izi = toplam_sebekeden_alim * KARBON_EMISYON_FAKTORU_SEBEKE
 
+    # simulasyon_motoru.py dosyasındaki 'sonuclar' dictionary'si içinde sadece 'saatlik_veri' kısmını güncelliyoruz
+
     # Sonuçları dictionary olarak düzenle ve döndür
     sonuclar = {
         'saatlik_veri': { # Saatlik detaylı veriler
@@ -209,13 +211,17 @@ def hesapla_dinamik_enerji_dengesi(
             'Istasyon Tuketimi': saatlik_istasyon_tuketimi_list,
             'Gunes Uretimi': saatlik_gunes_uretimi_list,
             'Ruzgar Uretimi': saatlik_ruzgar_uretimi_list,
-            'Net Tuketim': saatlik_net_tuketim_list,
-            'Batarya Doluluk': saatlik_batarya_doluluk_list,
-            'Batarya Sarj Akisi': saatlik_batarya_sarj_akisi_list,
-            'Batarya Desaj Akisi': saatlik_batarya_desarj_akisi_list,
-            'Şebekeden Alım': saatlik_sebekeden_alim_list,
-            'Şebekeye Verme': saatlik_sebekeye_verme_list,
-            'Saatlik Maliyet': saatlik_maliyet_list
+            
+            # --- BURADAKİ KEY İSİMLERİNİ GORSELLESTIRME.PY'DEKİ KULLANIMLARLA EŞLEŞTİRDİK ---
+            'Toplam Sistem Net Tüketimi (kWh)': saatlik_net_tuketim_list, # Hata veren buydu, düzeltildi
+            'Toplam Yenilenebilir Üretim (kWh)': [g + r for g, r in zip(saatlik_gunes_uretimi_list, saatlik_ruzgar_uretimi_list)], # Yeni eklendi (çizgi grafik için)
+            'Batarya Doluluk (kWh)': saatlik_batarya_doluluk_list, # Gorsellestirme ile uyumlu hale getirildi
+            'Batarya Doluluk Oranı (%)': [((d / batarya_kapasitesi_kwh) * 100) for d in saatlik_batarya_doluluk_list], # Yeni eklendi
+            'Bataryaya Giden (kWh)': saatlik_batarya_sarj_akisi_list, # Gorsellestirme ile uyumlu hale getirildi
+            'Bataryadan Çekilen (kWh)': [abs(val) for val in saatlik_batarya_desarj_akisi_list], # Gorsellestirme ile uyumlu hale getirildi
+            'Şebekeden Alım (kWh)': saatlik_sebekeden_alim_list, # Gorsellestirme ile uyumlu hale getirildi
+            'Şebekeye Verme (kWh)': saatlik_sebekeye_verme_list, # Gorsellestirme ile uyumlu hale getirildi
+            'Saatlik Maliyet (TL)': saatlik_maliyet_list
         },
         'gunluk_toplamlar': { # Toplam değerler (Simülasyon süresi boyunca)
             "Toplam Tren Tüketimi (kWh)": toplam_tren_tuketimi,
@@ -236,13 +242,9 @@ def hesapla_dinamik_enerji_dengesi(
         },
         'toplam_saat': toplam_saat,
         'simulasyon_suresi_gun': simulasyon_suresi_gun,
-        # Grafik fonksiyonları için gerekli bazı temel parametreleri de buraya ekleyelim
         'BATARYA_KAPASITESI_KWH': batarya_kapasitesi_kwh 
     }
 
     return sonuclar
 
-# NOT: Grafik çizim fonksiyonları buradan silindi ve gorsellestirme.py dosyasına taşınması gerekiyor.
-# Lütfen gorsellestirme.py dosyanızın güncellenmiş simulasyon_motoru çıktısı olan
-# 'sonuclar' dictionary'sini kabul ettiğinden emin olun.
-# Örnek gorsellestirme.py içeriğini bir önceki cevabımda vermiştim.
+# NOT: Diğer kodlar aynı kalacak. Sadece bu 'saatlik_veri' dictionary'si içeriği değişti.

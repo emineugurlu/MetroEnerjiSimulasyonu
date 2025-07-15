@@ -26,7 +26,8 @@ TOPLAM_SIMULASYON_SAATI = 24
 
 # Batarya (Enerji Depolama) Parametreleri
 # Bataryanın maksimum enerji depolama kapasitesi (kWh)
-BATARYA_KAPASITESI_KWH = 15000 # Örnek bir değer, daha sonra ayarlanabilir
+# parametreler.py içinde
+BATARYA_KAPASITESI_KWH = 30000 # Örneğin, mevcut değerin iki katı
 # Bataryanın şarj verimliliği (0 ile 1 arasında)
 SARJ_VERIMLILIGI = 0.90 # %90 verimle şarj
 # Bataryanın deşarj verimliliği (0 ile 1 arasında)
