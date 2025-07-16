@@ -53,11 +53,17 @@ _Graph 5: Hourly Energy Cost/Revenue_
 ## 📂 Project Structure
 MetroEnerjiSimulasyonu/
 ├── main.py                 # 🚀 Main file that starts the simulation and visualizes results
+
 ├── simulasyon_motoru.py    # 🧠 Contains the core logic for energy balance calculations and EMS optimization
+
 ├── gorsellestirme.py       # 📊 Functions for plotting simulation results into graphs
+
 ├── parametreler.py         # ⚙️ File defining all fixed parameters for the simulation
+
 ├── dinamik_veriler.xlsx    # 📈 Excel file containing hourly energy consumption and generation profiles
+
 └── README.md               # 📄 This README file
+
 ## 🚀 How to Run?
 
 To run the project on your system, follow these steps:
