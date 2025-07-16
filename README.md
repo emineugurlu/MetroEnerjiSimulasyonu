@@ -1,167 +1,104 @@
-# ⚡ Enerji Pozitif Metro Projesi: Akıllı EMS Entegreli Dinamik Simülasyon 🚇🔋☀️
+# ⚡ Energy Positive Metro Project: Smart EMS Integrated Dynamic Simulation 🚇🔋☀️
 
-## Proje Özeti
+## Project Summary
 
-Bu proje, metro sistemlerinin enerji tüketimini sadece karşılamakla kalmayıp, kendi enerjisini üreten ve hatta ürettiği fazlayı ulusal elektrik şebekesine geri veren, yani "Enerji Pozitif" hale gelen sürdürülebilir bir model oluşturmayı hedefleyen yenilikçi bir **konsept kanıtlama (Proof of Concept)** simülasyonudur. ✨ Akıllı bir Enerji Yönetim Sistemi (EMS) entegrasyonuyla yenilenebilir enerji kaynaklarını (güneş ve rüzgar) metro altyapısına entegre ederek, enerji verimliliğini ve çevresel sürdürülebilirliği maksimize etmeyi amaçlamaktadır.
+This project is an innovative **Proof of Concept** simulation aiming to create a sustainable model where metro systems not only meet their own energy consumption but also generate their own energy, even feeding surplus energy back to the national electricity grid, thus becoming "Energy Positive." ✨ By integrating renewable energy sources (solar and wind) with a Smart Energy Management System (EMS) into the metro infrastructure, the project seeks to maximize energy efficiency and environmental sustainability.
 
-## 🌟 Projenin Amacı
+## 🌟 Project Objectives
 
-* Metro sistemlerinin enerji bağımsızlığını artırmak.
-* Fosil yakıt tüketimini ve karbon ayak izini azaltmak. 🌱
-* Yenilenebilir enerji kaynaklarının büyük ölçekli altyapılarda entegrasyon potansiyelini göstermek.
-* Akıllı enerji yönetimi ve batarya depolama sistemlerinin rolünü modellemek.
-* Projenin ekonomik ve çevresel fizibilitesini simülasyon yoluyla ortaya koymak. 💰
+* To increase the energy independence of metro systems.
+* To reduce fossil fuel consumption and carbon footprint. 🌱
+* To demonstrate the potential of integrating renewable energy sources into large-scale infrastructure.
+* To model the role of smart energy management and battery storage systems.
+* To evaluate the economic and environmental feasibility of the project through simulation. 💰
 
-## ⚙️ Temel Bileşenler ve Yaklaşım
+## ⚙️ Core Components and Approach
 
-Proje, aşağıdaki ana bileşenleri içeren dinamik bir simülasyon modeli üzerine kurulmuştur:
+The project is built upon a dynamic simulation model encompassing the following key components:
 
-1.  **Dinamik Veri Profilleri:** Metro tren sefer yoğunluğu, istasyon enerji tüketimi, güneş radyasyonu ve rüzgar hızı gibi saatlik dinamik veriler, gerçekçi bir senaryo modellemesi için `dinamik_veriler.xlsx` dosyasından okunur.
-2.  **Yenilenebilir Enerji Kaynakları:** Güneş panelleri ☀️ ve rüzgar türbinleri 🌬️, metro sistemine entegre edilmiş olup, dinamik verilere göre enerji üretimi simüle edilir.
-3.  **Akıllı Enerji Yönetim Sistemi (EMS):** Projenin kalbi olan EMS, enerji üretimini (yenilenebilir), tüketimi (tren ve istasyon), batarya şarj/deşarjını ve şebeke etkileşimini (alım/satım) en uygun maliyet ve verimlilikle yönetmek için tasarlanmıştır. Bu sistem, enerji akışını optimize etmek için bir optimizasyon modeli (Pulp kütüphanesi kullanılarak) kullanır.
-4.  **Batarya Enerji Depolama Sistemi:** Bataryalar 🔋, enerji fazlasını depolayarak yenilenebilir enerjinin dalgalanmalarını dengelemekte ve sistemin anlık ihtiyaçlarını karşılamada kritik bir rol oynamaktadır. Şarj ve deşarj verimlilikleri, minimum/maksimum doluluk eşikleri gibi parametreler dikkate alınmıştır.
-5.  **Finansal ve Çevresel Analiz:** Simülasyon, enerji maliyetleri/gelirleri, toplam yatırım (CAPEX), işletme-bakım (OPEX) maliyetleri ve karbon emisyonları gibi metrikleri hesaplayarak projenin ekonomik ve çevresel etkilerini nicel olarak değerlendirir.
+1.  **Dynamic Data Profiles:** Hourly dynamic data such as metro train traffic density, station energy consumption, solar radiation, and wind speed are read from the `dinamik_veriler.xlsx` file for realistic scenario modeling.
+2.  **Renewable Energy Sources:** Solar panels ☀️ and wind turbines 🌬️ are integrated into the metro system, and their energy production is simulated based on dynamic data.
+3.  **Smart Energy Management System (EMS):** As the heart of the project, the EMS is designed to manage the balance between energy generation (renewables), consumption (trains and stations), battery charging/discharging, and grid interaction (buying/selling) at optimal cost and efficiency. This system uses an optimization model (utilizing the Pulp library) to optimize energy flow.
+4.  **Battery Energy Storage System:** Batteries 🔋 play a critical role in balancing the fluctuations of renewable energy, storing surplus energy, and meeting immediate system demands. Charging and discharging efficiencies, as well as minimum/maximum state-of-charge thresholds, are taken into account.
+5.  **Financial and Environmental Analysis:** The simulation calculates metrics such as energy costs/revenues, total capital expenditure (CAPEX), operational and maintenance (OPEX) costs, and carbon emissions to quantitatively assess the project's economic and environmental impacts.
 
-## 📈 Elde Edilen Başarılar ve Sonuçlar
+## 📈 Achievements and Results
 
-Yapılan simülasyonlar sonucunda projenin temel hedeflerine ulaşıldığı gözlemlenmiştir:
+The simulations conducted have demonstrated that the project's main objectives have been achieved:
 
-* **Enerji Pozitiflik:** Simülasyon, metro sisteminin kendi tüketimini (tren ve istasyon) karşılamanın ötesinde, yenilenebilir enerji kaynaklarıyla önemli miktarda enerji fazlası ürettiğini ve bu fazlalığı ulusal şebekeye geri verdiğini göstermiştir.
-* **Düşük Şebeke Bağımlılığı:** Akıllı EMS ve batarya depolama sayesinde, metro sisteminin şebekeden enerji alımının neredeyse sıfıra indiği kanıtlanmıştır.
-* **Ekonomik Potansiyel:** Enerji satışlarından elde edilen gelirler ve optimize edilmiş enerji yönetimi sayesinde, projenin simülasyon dönemi için net kâr potansiyeli taşıdığı belirlenmiştir.
-* **Çevresel Fayda:** Şebekeden alımın minimize edilmesiyle, metro sisteminin karbon ayak izi önemli ölçüde azaltılmıştır.
+* **Energy Positivity:** The simulation showed that the metro system not only met its own consumption (trains and stations) but also generated a significant energy surplus through renewable energy sources, feeding this excess back to the national grid.
+* **Reduced Grid Dependency:** Thanks to the Smart EMS and battery storage, it has been proven that the metro system's energy purchase from the grid was reduced to nearly zero.
+* **Economic Potential:** Due to revenues from energy sales and optimized energy management, the project was determined to have the potential for net profit during the simulation period.
+* **Environmental Benefit:** By minimizing energy purchase from the grid, the carbon footprint of the metro system has been significantly reduced.
 
-## 📊 Örnek Simülasyon Çıktıları (Ekran Görüntüleri)
+## 📊 Example Simulation Outputs (Screenshots)
 
-Simülasyon çalıştırıldıktan sonra üretilen bazı grafik örnekleri:
+Here are some example graphs generated after running the simulation:
 
-
-_Grafik 1: Günlük Metro Enerji Dengesi_
 <img width="1915" height="1002" alt="image" src="https://github.com/user-attachments/assets/3256f02a-4b9d-4399-92e5-3d44b2f8367e" />
+_Graph 1: Daily Metro Energy Balance_
 
-_Grafik 2: Saatlik Metro Enerji Akışı_
 <img width="1919" height="1014" alt="image" src="https://github.com/user-attachments/assets/786c9e7a-6d54-4137-a309-29a50a6f5167" />
+_Graph 2: Hourly Metro Energy Flow_
 
-_Grafik 3: Saatlik Batarya Doluluk Seviyesi_
 <img width="1919" height="1011" alt="image" src="https://github.com/user-attachments/assets/03d8d99e-78c4-4af2-b4ae-056bc263bb80" />
+_Graph 3: Hourly Battery State of Charge_
 
-_Grafik 4: Saatlik Batarya Şarj/Deşarj Akışı_
 <img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/12de54b7-d3c5-4043-adc9-307fbe4c4cb9" />
+_Graph 4: Hourly Battery Charge/Discharge Flow_
 
-_Grafik 5: Saatlik Enerji Maliyeti/Geliri_
 <img width="1917" height="1014" alt="image" src="https://github.com/user-attachments/assets/7692516f-f507-4bd1-a968-cda6a69a287e" />
+_Graph 5: Hourly Energy Cost/Revenue_
 
-## 📂 Proje Yapısı
-Kodlama desteği
-Şefim, kesinlikle! README dosyasını daha çekici, bilgilendirici ve kullanıcı dostu hale getirelim. Ekran görüntüleri, kurulum talimatları ve biraz emoji, projenizi çok daha cazip kılacaktır.
+## 📂 Project Structure
+MetroEnerjiSimulasyonu/
+├── main.py                 # 🚀 Main file that starts the simulation and visualizes results
+├── simulasyon_motoru.py    # 🧠 Contains the core logic for energy balance calculations and EMS optimization
+├── gorsellestirme.py       # 📊 Functions for plotting simulation results into graphs
+├── parametreler.py         # ⚙️ File defining all fixed parameters for the simulation
+├── dinamik_veriler.xlsx    # 📈 Excel file containing hourly energy consumption and generation profiles
+└── README.md               # 📄 This README file
+## 🚀 How to Run?
 
-İşte güncellenmiş ve zenginleştirilmiş README taslağımız:
+To run the project on your system, follow these steps:
 
-Markdown
-
-# ⚡ Enerji Pozitif Metro Projesi: Akıllı EMS Entegreli Dinamik Simülasyon 🚇🔋☀️
-
-## Proje Özeti
-
-Bu proje, metro sistemlerinin enerji tüketimini sadece karşılamakla kalmayıp, kendi enerjisini üreten ve hatta ürettiği fazlayı ulusal elektrik şebekesine geri veren, yani "Enerji Pozitif" hale gelen sürdürülebilir bir model oluşturmayı hedefleyen yenilikçi bir **konsept kanıtlama (Proof of Concept)** simülasyonudur. ✨ Akıllı bir Enerji Yönetim Sistemi (EMS) entegrasyonuyla yenilenebilir enerji kaynaklarını (güneş ve rüzgar) metro altyapısına entegre ederek, enerji verimliliğini ve çevresel sürdürülebilirliği maksimize etmeyi amaçlamaktadır.
-
-## 🌟 Projenin Amacı
-
-* Metro sistemlerinin enerji bağımsızlığını artırmak.
-* Fosil yakıt tüketimini ve karbon ayak izini azaltmak. 🌱
-* Yenilenebilir enerji kaynaklarının büyük ölçekli altyapılarda entegrasyon potansiyelini göstermek.
-* Akıllı enerji yönetimi ve batarya depolama sistemlerinin rolünü modellemek.
-* Projenin ekonomik ve çevresel fizibilitesini simülasyon yoluyla ortaya koymak. 💰
-
-## ⚙️ Temel Bileşenler ve Yaklaşım
-
-Proje, aşağıdaki ana bileşenleri içeren dinamik bir simülasyon modeli üzerine kurulmuştur:
-
-1.  **Dinamik Veri Profilleri:** Metro tren sefer yoğunluğu, istasyon enerji tüketimi, güneş radyasyonu ve rüzgar hızı gibi saatlik dinamik veriler, gerçekçi bir senaryo modellemesi için `dinamik_veriler.xlsx` dosyasından okunur.
-2.  **Yenilenebilir Enerji Kaynakları:** Güneş panelleri ☀️ ve rüzgar türbinleri 🌬️, metro sistemine entegre edilmiş olup, dinamik verilere göre enerji üretimi simüle edilir.
-3.  **Akıllı Enerji Yönetim Sistemi (EMS):** Projenin kalbi olan EMS, enerji üretimini (yenilenebilir), tüketimi (tren ve istasyon), batarya şarj/deşarjını ve şebeke etkileşimini (alım/satım) en uygun maliyet ve verimlilikle yönetmek için tasarlanmıştır. Bu sistem, enerji akışını optimize etmek için bir optimizasyon modeli (Pulp kütüphanesi kullanılarak) kullanır.
-4.  **Batarya Enerji Depolama Sistemi:** Bataryalar 🔋, enerji fazlasını depolayarak yenilenebilir enerjinin dalgalanmalarını dengelemekte ve sistemin anlık ihtiyaçlarını karşılamada kritik bir rol oynamaktadır. Şarj ve deşarj verimlilikleri, minimum/maksimum doluluk eşikleri gibi parametreler dikkate alınmıştır.
-5.  **Finansal ve Çevresel Analiz:** Simülasyon, enerji maliyetleri/gelirleri, toplam yatırım (CAPEX), işletme-bakım (OPEX) maliyetleri ve karbon emisyonları gibi metrikleri hesaplayarak projenin ekonomik ve çevresel etkilerini nicel olarak değerlendirir.
-
-## 📈 Elde Edilen Başarılar ve Sonuçlar
-
-Yapılan simülasyonlar sonucunda projenin temel hedeflerine ulaşıldığı gözlemlenmiştir:
-
-* **Enerji Pozitiflik:** Simülasyon, metro sisteminin kendi tüketimini (tren ve istasyon) karşılamanın ötesinde, yenilenebilir enerji kaynaklarıyla önemli miktarda enerji fazlası ürettiğini ve bu fazlalığı ulusal şebekeye geri verdiğini göstermiştir.
-* **Düşük Şebeke Bağımlılığı:** Akıllı EMS ve batarya depolama sayesinde, metro sisteminin şebekeden enerji alımının neredeyse sıfıra indiği kanıtlanmıştır.
-* **Ekonomik Potansiyel:** Enerji satışlarından elde edilen gelirler ve optimize edilmiş enerji yönetimi sayesinde, projenin simülasyon dönemi için net kâr potansiyeli taşıdığı belirlenmiştir.
-* **Çevresel Fayda:** Şebekeden alımın minimize edilmesiyle, metro sisteminin karbon ayak izi önemli ölçüde azaltılmıştır.
-
-## 📊 Örnek Simülasyon Çıktıları (Ekran Görüntüleri)
-
-Simülasyon çalıştırıldıktan sonra üretilen bazı grafik örnekleri:
-
-**(Buraya Çubuk Grafik Görseli Gelecek - örn. `enerji_dengesi_cubuk.png`)**
-_Grafik 1: Günlük Metro Enerji Dengesi_
-
-**(Buraya Çizgi Grafik Görseli Gelecek - örn. `enerji_dengesi_cizgi.png`)**
-_Grafik 2: Saatlik Metro Enerji Akışı_
-
-**(Buraya Batarya Doluluk Grafiği Görseli Gelecek - örn. `batarya_doluluk.png`)**
-_Grafik 3: Saatlik Batarya Doluluk Seviyesi_
-
-**(Buraya Batarya Akım Grafiği Görseli Gelecek - örn. `batarya_akim.png`)**
-_Grafik 4: Saatlik Batarya Şarj/Deşarj Akışı_
-
-**(Buraya Maliyet Grafiği Görseli Gelecek - örn. `saatlik_maliyet.png`)**
-_Grafik 5: Saatlik Enerji Maliyeti/Geliri_
-
-## 📂 Proje Yapısı
-
-MetroEnerjiSimulasyonu
-├── main.py                 # 🚀 Ana simülasyonu başlatan ve sonuçları görselleştiren dosya
-├── simulasyon_motoru.py    # 🧠 Enerji dengesi hesaplamalarını ve EMS optimizasyonunu içeren ana mantık
-├── gorsellestirme.py       # 📊 Simülasyon sonuçlarını grafiklere döken fonksiyonlar
-├── parametreler.py         # ⚙️ Simülasyon için tüm sabit parametrelerin tanımlandığı dosya
-├── dinamik_veriler.xlsx    # 📈 Saatlik enerji tüketim ve üretim profillerini içeren Excel dosyası
-└── README.md               # 📄 Bu dosya
-
-## 🚀 Nasıl Çalıştırılır?
-
-Projenin kendi sisteminizde çalışması için aşağıdaki adımları takip edin:
-
-1.  **Ön Gereksinimler:**
-    * Python 3.x sürümünün kurulu olduğundan emin olun.
-    * Gerekli Python kütüphanelerini yükleyin. Terminalinizde şu komutu çalıştırın:
+1.  **Prerequisites:**
+    * Ensure Python 3.x is installed.
+    * Install the necessary Python libraries. Run the following command in your terminal:
         ```bash
         pip install pandas matplotlib pulp openpyxl
         ```
-        (Not: `openpyxl`, `pandas`'ın Excel dosyalarını okuması için gerekli olabilir.)
+        (Note: `openpyxl` might be required for `pandas` to read Excel files.)
 
-2.  **Depoyu Klonlama veya İndirme:**
-    * Git yüklüyse, terminalde istediğiniz dizine giderek depoyu klonlayın:
+2.  **Clone or Download the Repository:**
+    * If Git is installed, clone the repository by navigating to your desired directory in the terminal and running:
         ```bash
-        git clone [https://github.com/KULLANICI_ADINIZ/EnerjiPozitifMetro.git](https://github.com/KULLANICI_ADINIZ/EnerjiPozitifMetro.git)
+        git clone [https://github.com/emineugurlu/MetroEnerjiSimulasyonu.git](https://github.com/emineugurlu/MetroEnerjiSimulasyonu.git)
         ```
 
-3.  **Proje Dizine Gitme:**
-    * Terminalinizde projenin ana dizinine (yani `main.py` dosyasının bulunduğu klasöre) geçin:
+3.  **Navigate to Project Directory:**
+    * Change your current directory in the terminal to the main project directory (where the `main.py` file is located):
         ```bash
         cd MetroEnerjiSimulasyonu
-        ``
+        ```
 
-4.  **Simülasyonu Başlatma:**
-    * Aşağıdaki komutu çalıştırarak simülasyonu başlatın:
+4.  **Start the Simulation:**
+    * Run the following command to begin the simulation:
         ```bash
         python main.py
         ```
 
-5.  **Sonuçlar:**
-    * Simülasyonun ilerlemesini ve özet sonuçlarını terminalde anlık olarak göreceksiniz.
-    * Simülasyon tamamlandığında, `matplotlib` tarafından oluşturulan çeşitli grafik pencereleri otomatik olarak açılacaktır. 📊
+5.  **Results:**
+    * You will see the simulation progress and summary results directly in your terminal.
+    * Upon completion of the simulation, various graph windows generated by `matplotlib` will automatically open. 📊
 
-## 💡 Gelecek Geliştirme Fırsatları (Vizyonumuz)
+## 💡 Future Development Opportunities (Our Vision)
 
-Bu proje, gelecekteki daha kapsamlı ve gerçek dünya uygulamalarına yönelik çalışmalar için güçlü bir temel sunmaktadır. Potansiyel geliştirme alanlarımız şunlardır:
+This project lays a strong foundation for more comprehensive and real-world applications in the future. Our potential development areas include:
 
-* **Makine Öğrenmesi Tabanlı Tahmin:** Enerji talebi ve yenilenebilir enerji üretiminin daha isabetli tahmin edilmesi için gelişmiş makine öğrenmesi modellerinin entegrasyonu. Bu, EMS'in proaktif kararlar almasını sağlayacaktır.
-* **Dijital İkiz (Digital Twin) Entegrasyonu:** Metro sisteminin ve enerji altyapısının sanal bir kopyasını oluşturarak, "ne olur?" senaryoları üzerinde detaylı analizler yapmak, bakım süreçlerini optimize etmek ve sistemi otomatik olarak iyileştirmek.
-* **Enerji Ticareti Modülleri:** Fazla enerjinin spot piyasada dinamik fiyatlandırma algoritmalarıyla değerlendirilerek, projenin finansal gelirlerini maksimize etmek.
-* **Sosyal ve Çevresel Etki Analizi:** Karbon azaltımının hava kalitesine, halk sağlığına ve şehir halkının genel refahına olan somut katkılarının bilimsel olarak sayısallaştırılması ve proje paydaşlarına ek değer önerisi olarak sunulması.
+* **Machine Learning-Based Forecasting:** Integration of advanced machine learning models for more accurate forecasting of energy demand and renewable energy generation. This will enable the EMS to make proactive decisions.
+* **Digital Twin Integration:** Creating a virtual replica of the metro system and its energy infrastructure to conduct detailed "what-if" scenarios, optimize maintenance processes, and autonomously improve the system.
+* **Energy Trading Modules:** Maximizing the project's financial revenues by evaluating surplus energy in the spot market with dynamic pricing algorithms.
+* **Social & Environmental Impact Analysis:** Quantifying the tangible contributions of carbon reduction to air quality, public health, and the overall well-being of city residents, presenting it as an added value proposition to project stakeholders.
 
 ---
